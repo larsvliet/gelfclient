@@ -18,6 +18,7 @@ package org.graylog2.gelfclient;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URI;
 
 /**
  * The configuration used by a {@link org.graylog2.gelfclient.transport.GelfTransport}.
@@ -25,8 +26,11 @@ import java.net.InetSocketAddress;
 public class GelfConfiguration {
     private static final int DEFAULT_PORT = 12201;
     private static final String DEFAULT_HOSTNAME = "127.0.0.1";
+    private static final String DEFAULT_PATH = "/gelf";
+
     private final String hostname;
     private final int port;
+    private final String path;
     private GelfTransports transport = GelfTransports.TCP;
     private int queueSize = 512;
     private boolean tlsEnabled = false;
@@ -40,14 +44,32 @@ public class GelfConfiguration {
     private int maxInflightSends = 512;
 
     /**
+     * Creates a new configuration with the given hostname, port and path.
+     * Use this constructor when setting up a HTTP GELF endpoint.
+     *
+     * @param hostname The hostname of the GELF-enabled server
+     * @param port The port of the GELF-enabled server
+     * @param path THe path of the GELF-enabled server
+     */
+    public GelfConfiguration(final String hostname, final int port, final String path) {
+        this.hostname = checkHostname(hostname);
+        this.port = checkPort(port);
+
+        if (path == null || path.trim().isEmpty()) {
+            this.path = DEFAULT_PATH;
+        } else {
+            this.path = path;
+        }
+    }
+
+    /**
      * Creates a new configuration with the given hostname and port.
      *
      * @param hostname The hostname of the GELF-enabled server
      * @param port The port of the GELF-enabled server
      */
     public GelfConfiguration(final String hostname, final int port) {
-        this.hostname = checkHostname(hostname);
-        this.port = checkPort(port);
+        this(hostname, port, DEFAULT_PATH);
     }
 
     /**
@@ -101,6 +123,14 @@ public class GelfConfiguration {
     public int getPort() {
         return port;
     }
+
+    /**
+     * Get the path of the GELF server.
+     *
+     * @return the path of the GELF server.
+     */
+    public String getPath() { return path; }
+
 
     /**
      * Get the remote address of the GELF server.
